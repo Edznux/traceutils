@@ -72,3 +72,39 @@ func TestDecodeEncode(t *testing.T) {
 	// Check that the encoded trace is the same as the original.
 	require.Equal(t, inTrace, outTrace.Bytes())
 }
+
+// Just to make sure I'm not going insane
+func TestDecodeEncodeZero(t *testing.T) {
+	// Read the test trace.
+	inTrace, err := os.ReadFile(filepath.Join("..", "..", "testdata", "tracezero.bin"))
+	require.NoError(t, err)
+
+	// Create a decoder
+	dec := NewDecoder(bytes.NewReader(inTrace))
+
+	// Create an encoder
+	var outTrace bytes.Buffer
+	enc := NewEncoder(&outTrace)
+
+	// Decode and encode each event.
+	for {
+		beforeLen := outTrace.Len()
+		e := Event{}
+		if err := dec.Decode(&e); err != nil {
+			require.Equal(t, io.EOF, err)
+			break
+		}
+		require.NoError(t, enc.Encode(&e))
+
+		// Check output after each event to understand errors without having to
+		// diff the whole binary output.
+		gotEncoded := outTrace.Bytes()[beforeLen:]
+		wantEncoded := inTrace[beforeLen : beforeLen+len(gotEncoded)]
+		require.Equal(t, wantEncoded, gotEncoded, "failed to encode event: %v", e)
+	}
+
+	// Check that the length of the encoded trace is the same as the original.
+	require.Equal(t, len(inTrace), outTrace.Len())
+	// Check that the encoded trace is the same as the original.
+	require.Equal(t, inTrace, outTrace.Bytes())
+}
