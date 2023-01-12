@@ -73,7 +73,7 @@ func TestDecodeEncode(t *testing.T) {
 	require.Equal(t, inTrace, outTrace.Bytes())
 }
 
-// Just to make sure I'm not going insane
+// TestDecodeEncodeZero tests that invalid traces containing only a null byte is not throwing an error such as "Unexpected EOF".
 func TestDecodeEncodeZero(t *testing.T) {
 	// Read the test trace.
 	inTrace, err := os.ReadFile(filepath.Join("..", "..", "testdata", "tracezero.bin"))
